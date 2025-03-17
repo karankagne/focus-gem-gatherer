@@ -11,12 +11,14 @@ import { Toaster } from '@/components/ui/sonner';
 import { FocusProvider } from './contexts/FocusContext';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import FriendConnectionHandler from './components/features/FriendConnectionHandler';
+import PermissionRequest from './components/features/PermissionRequest';
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark">
       <FocusProvider>
         <Router>
+          <PermissionRequest />
           <FriendConnectionHandler />
           <div className="pt-safe" style={{ minHeight: '100vh' }}>
             <Routes>
