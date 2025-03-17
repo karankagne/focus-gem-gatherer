@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Users, Trophy, Timer, Calendar } from 'lucide-react';
+import { Users, Trophy, Timer, Calendar, Wifi, WifiOff } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import AnimatedCounter from '../ui/AnimatedCounter';
+import { toast } from 'sonner';
 
 interface Participant {
   id: string;
@@ -25,11 +26,12 @@ interface ChallengeCardProps {
   reward: number; // coins
   userProgress: number; // value between 0 and 1
   joined?: boolean;
-  onJoin?: () => void;
+  onJoin?: (id: string, isOnline: boolean) => void;
   className?: string;
 }
 
 const ChallengeCard = ({
+  id,
   title,
   description,
   type,
@@ -44,6 +46,26 @@ const ChallengeCard = ({
 }: ChallengeCardProps) => {
   const maxParticipantsToShow = 3;
   const progressPercent = userProgress * 100;
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleJoinChallenge = () => {
+    if (onJoin) {
+      onJoin(id, isOnline);
+    }
+  };
 
   return (
     <GlassCard className={cn('overflow-hidden', className)}>
@@ -114,11 +136,27 @@ const ChallengeCard = ({
 
         {!joined && (
           <Button 
-            onClick={onJoin} 
+            onClick={handleJoinChallenge} 
             className="w-full mt-2 bg-focus hover:bg-focus-dark text-white"
           >
-            Join Challenge
+            {isOnline ? (
+              <span className="flex items-center">
+                Join Challenge
+              </span>
+            ) : (
+              <span className="flex items-center">
+                <WifiOff className="h-4 w-4 mr-1" />
+                Join Offline
+              </span>
+            )}
           </Button>
+        )}
+        
+        {!isOnline && joined && (
+          <div className="mt-2 text-xs text-amber-500 flex items-center">
+            <WifiOff className="h-3 w-3 mr-1" />
+            <span>Will sync when online</span>
+          </div>
         )}
       </div>
     </GlassCard>

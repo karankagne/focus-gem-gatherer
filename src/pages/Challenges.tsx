@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import ChallengeCard from '@/components/features/ChallengeCard';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { WifiOff, Wifi } from 'lucide-react';
 
 // Sample challenges data
 const sampleChallenges = [
@@ -60,24 +61,124 @@ const sampleChallenges = [
   },
 ];
 
+const OFFLINE_STORAGE_KEY = 'offlineChallengeJoins';
+
 const Challenges = () => {
   const [challenges, setChallenges] = useState(sampleChallenges);
   const [activeTab, setActiveTab] = useState<'all' | 'solo' | 'group'>('all');
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [hasOfflinePendingJoins, setHasOfflinePendingJoins] = useState(false);
+
+  // Check for pending offline joins on load
+  useEffect(() => {
+    const pendingJoins = localStorage.getItem(OFFLINE_STORAGE_KEY);
+    setHasOfflinePendingJoins(!!pendingJoins && JSON.parse(pendingJoins).length > 0);
+    
+    const handleOnline = () => {
+      setIsOnline(true);
+      syncOfflineJoins();
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Try to sync offline joins when component mounts and we're online
+    if (navigator.onLine) {
+      syncOfflineJoins();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const syncOfflineJoins = () => {
+    try {
+      const pendingJoins = localStorage.getItem(OFFLINE_STORAGE_KEY);
+      
+      if (pendingJoins) {
+        const parsedJoins = JSON.parse(pendingJoins);
+        
+        if (parsedJoins.length > 0) {
+          // Process each offline join
+          parsedJoins.forEach(challengeId => {
+            setChallenges(prev => 
+              prev.map(challenge => 
+                challenge.id === challengeId ? { ...challenge, joined: true } : challenge
+              )
+            );
+          });
+          
+          // Clear offline storage after processing
+          localStorage.removeItem(OFFLINE_STORAGE_KEY);
+          setHasOfflinePendingJoins(false);
+          
+          toast.success('Offline challenges synced!', {
+            description: `Successfully joined ${parsedJoins.length} challenge(s)`,
+            icon: <Wifi className="h-4 w-4" />,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing offline joins:', error);
+      toast.error('Failed to sync offline challenges', {
+        description: 'Please try again later',
+      });
+    }
+  };
 
   const filteredChallenges = activeTab === 'all' 
     ? challenges 
     : challenges.filter(challenge => challenge.type === activeTab);
 
-  const handleJoinChallenge = (id: string) => {
-    setChallenges(prev => 
-      prev.map(challenge => 
-        challenge.id === id ? { ...challenge, joined: true } : challenge
-      )
-    );
-    
-    toast.success('Joined challenge!', {
-      description: 'Good luck and stay focused!',
-    });
+  const handleJoinChallenge = (id: string, isOnline: boolean) => {
+    if (isOnline) {
+      // Handle online join
+      setChallenges(prev => 
+        prev.map(challenge => 
+          challenge.id === id ? { ...challenge, joined: true } : challenge
+        )
+      );
+      
+      toast.success('Joined challenge!', {
+        description: 'Good luck and stay focused!',
+      });
+    } else {
+      // Handle offline join
+      try {
+        // Add to local storage
+        const pendingJoins = localStorage.getItem(OFFLINE_STORAGE_KEY);
+        const joins = pendingJoins ? JSON.parse(pendingJoins) : [];
+        
+        if (!joins.includes(id)) {
+          joins.push(id);
+          localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(joins));
+          setHasOfflinePendingJoins(true);
+        }
+        
+        // Update UI
+        setChallenges(prev => 
+          prev.map(challenge => 
+            challenge.id === id ? { ...challenge, joined: true } : challenge
+          )
+        );
+        
+        toast.success('Challenge queued for join!', {
+          description: 'Will sync when you go online',
+          icon: <WifiOff className="h-4 w-4" />,
+        });
+      } catch (error) {
+        console.error('Error storing offline join:', error);
+        toast.error('Failed to store offline join', {
+          description: 'Please try again',
+        });
+      }
+    }
   };
 
   return (
@@ -93,6 +194,20 @@ const Challenges = () => {
         >
           <h1 className="text-3xl font-bold tracking-tight mb-2">Challenges</h1>
           <p className="text-muted-foreground">Complete challenges to earn extra rewards</p>
+          
+          {!isOnline && (
+            <div className="mt-2 flex items-center text-amber-500 text-sm">
+              <WifiOff className="h-4 w-4 mr-1" />
+              <span>You're offline. Challenge joins will sync when you reconnect.</span>
+            </div>
+          )}
+          
+          {isOnline && hasOfflinePendingJoins && (
+            <div className="mt-2 flex items-center text-green-500 text-sm">
+              <Wifi className="h-4 w-4 mr-1" />
+              <span>Online now! Your offline challenges have been synced.</span>
+            </div>
+          )}
         </motion.div>
 
         <div className="flex gap-2 mb-6 overflow-x-auto">
@@ -134,7 +249,7 @@ const Challenges = () => {
             >
               <ChallengeCard
                 {...challenge}
-                onJoin={() => handleJoinChallenge(challenge.id)}
+                onJoin={handleJoinChallenge}
               />
             </motion.div>
           ))}
