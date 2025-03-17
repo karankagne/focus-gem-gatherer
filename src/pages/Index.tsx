@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AlarmClock, Coins, Lock } from 'lucide-react';
@@ -80,7 +79,6 @@ const Index = () => {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold tracking-tight mb-2">FocusBuddy</h1>
           <p className="text-muted-foreground">Block distractions. Earn rewards. Stay focused.</p>
         </motion.div>
 
