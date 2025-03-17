@@ -72,7 +72,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary pb-20 sm:pb-0 sm:pt-16">
       <Header />
 
-      <main className="max-w-screen-md mx-auto px-4 py-6">
+      <main className="max-w-screen-md mx-auto px-4 py-6 pt-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
