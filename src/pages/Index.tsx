@@ -10,6 +10,8 @@ import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { useFocus } from '@/contexts/FocusContext';
 import { Button } from '@/components/ui/button';
 import { useFocusSession } from '@/hooks/useFocusSession';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 const Index = () => {
   const { 
@@ -21,6 +23,8 @@ const Index = () => {
   } = useFocus();
   
   const [sessionDuration, setSessionDuration] = useState(25); // Default to 25 minutes
+  const [customDuration, setCustomDuration] = useState('');
+  const [isCustomTime, setIsCustomTime] = useState(false);
   
   const durations = [15, 25, 45, 60];
   
@@ -39,6 +43,31 @@ const Index = () => {
   } = useFocusSession({
     initialDuration: sessionDuration,
   });
+
+  const handleCustomDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow only numbers
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setCustomDuration(value);
+  };
+
+  const applyCustomDuration = () => {
+    const duration = parseInt(customDuration);
+    if (isNaN(duration) || duration <= 0) {
+      toast.error('Please enter a valid time', {
+        description: 'Time must be a positive number'
+      });
+      return;
+    }
+    
+    if (duration > 120) {
+      toast.warning('Long focus session', {
+        description: 'Sessions over 120 minutes may be difficult to maintain'
+      });
+    }
+    
+    setSessionDuration(duration);
+    setIsCustomTime(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary pb-20 sm:pb-0 sm:pt-16">
@@ -116,8 +145,8 @@ const Index = () => {
           className="mb-8"
         >
           <div className="mb-4">
-            <div className="flex justify-center space-x-2 mb-6">
-              {!isActive && durations.map((minutes) => (
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {!isActive && !isCustomTime && durations.map((minutes) => (
                 <Button
                   key={minutes}
                   variant={sessionDuration === minutes ? "default" : "outline"}
@@ -128,6 +157,37 @@ const Index = () => {
                   {minutes} min
                 </Button>
               ))}
+              
+              {!isActive && !isCustomTime && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCustomTime(true)}
+                  className="rounded-full"
+                  disabled={isActive}
+                >
+                  Custom
+                </Button>
+              )}
+              
+              {!isActive && isCustomTime && (
+                <div className="flex items-center gap-2 w-full max-w-xs mx-auto">
+                  <Input
+                    type="text"
+                    value={customDuration}
+                    onChange={handleCustomDurationChange}
+                    placeholder="Enter minutes"
+                    className="text-center"
+                    autoFocus
+                  />
+                  <Button onClick={applyCustomDuration}>Set</Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsCustomTime(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="flex justify-center">
               <FocusTimer 
@@ -156,3 +216,4 @@ const cn = (...classes: (string | boolean | undefined)[]) =>
   classes.filter(Boolean).join(' ');
 
 export default Index;
+
