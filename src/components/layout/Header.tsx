@@ -35,7 +35,7 @@ const Header = () => {
   };
 
   return (
-    <header className={`fixed w-full z-50 transition-all bg-background/95 backdrop-blur-sm shadow-sm ${isHome ? 'py-4' : 'py-2'}`}>
+    <header className={`fixed w-full z-50 transition-all bg-background shadow-sm ${isHome ? 'py-4' : 'py-2'}`} style={{ top: "-2px" }}>
       <div className="max-w-screen-md mx-auto px-4 flex items-center justify-between">
         <Link to="/" className="flex items-center">
           <Hourglass className="h-6 w-6 text-focus mr-2" />
@@ -87,7 +87,7 @@ const Header = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-14 left-0 w-full bg-background/95 backdrop-blur-md border-b shadow-lg"
+            className="fixed top-14 left-0 w-full bg-background border-b shadow-lg"
           >
             <nav className="flex flex-col max-w-screen-md mx-auto p-4">
               {navItems.map((item) => (
