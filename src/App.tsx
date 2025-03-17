@@ -20,7 +20,7 @@ function App() {
         <Router>
           <PermissionRequest />
           <FriendConnectionHandler />
-          <div className="pt-safe" style={{ minHeight: '100vh' }}>
+          <div className="pt-safe w-full overflow-x-hidden" style={{ minHeight: '100vh' }}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/challenges" element={<Challenges />} />
