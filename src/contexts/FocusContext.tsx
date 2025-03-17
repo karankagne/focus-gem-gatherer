@@ -35,6 +35,7 @@ interface FocusProviderProps {
 export const FocusProvider = ({ children }: FocusProviderProps) => {
   const [isInFocusSession, setIsInFocusSession] = useState(false);
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState(0);
+  const [sessionDuration, setSessionDuration] = useState(25); // Default 25 minutes
   const [totalFocusTime, setTotalFocusTime] = useState(0);
   const [focusSessions, setFocusSessions] = useState(0);
   const [coins, setCoins] = useState(120); // Starting coins
@@ -72,13 +73,14 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
 
   const startFocusSession = (minutes: number) => {
     setIsInFocusSession(true);
+    setSessionDuration(minutes);
     setSessionTimeRemaining(minutes * 60);
   };
 
   const endFocusSession = (completed = false) => {
     if (completed) {
       // Calculate coins based on session length
-      const sessionMinutes = Math.floor((sessionTimeRemaining) / 60);
+      const sessionMinutes = Math.floor(sessionDuration);
       const earnedCoins = sessionMinutes;
       earnCoins(earnedCoins);
       

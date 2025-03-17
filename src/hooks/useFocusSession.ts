@@ -18,6 +18,15 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
   
   const { earnCoins, startFocusSession: contextStartSession, endFocusSession: contextEndSession } = useFocus();
 
+  // Update duration when initialDuration changes
+  useEffect(() => {
+    setDuration(initialDuration);
+    // Reset timer if not active
+    if (!isActive) {
+      setTimeElapsed(0);
+    }
+  }, [initialDuration, isActive]);
+
   const startSession = useCallback(() => {
     setIsActive(true);
     setIsPaused(false);
