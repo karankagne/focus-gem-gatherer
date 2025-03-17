@@ -68,7 +68,7 @@ const Header = () => {
 
         {/* Mobile hamburger menu */}
         {isMobile && (
-          <div className="flex items-center">
+          <div className="flex items-center mr-5">
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="mr-1">
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
