@@ -16,17 +16,20 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
   const [isPaused, setIsPaused] = useState(false);
   const [isStopConfirmationOpen, setIsStopConfirmationOpen] = useState(false);
   
-  const { earnCoins } = useFocus();
+  const { earnCoins, startFocusSession: contextStartSession, endFocusSession: contextEndSession } = useFocus();
 
   const startSession = useCallback(() => {
     setIsActive(true);
     setIsPaused(false);
     setTimeElapsed(0);
     
+    // Call the context's startFocusSession to trigger app blocking
+    contextStartSession(duration);
+    
     toast('Focus session started', {
       description: `Stay focused for ${duration} minutes to earn coins!`,
     });
-  }, [duration]);
+  }, [duration, contextStartSession]);
 
   const pauseSession = useCallback(() => {
     // If already active, we should show confirmation before pausing
@@ -65,6 +68,9 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
     setIsActive(false);
     setIsPaused(false);
     
+    // Notify the context that the session has ended
+    contextEndSession(completed);
+    
     if (completed) {
       const earnedCoins = Math.floor(timeElapsed / 60);
       earnCoins(earnedCoins);
@@ -79,13 +85,16 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
         description: 'You can start a new session when you\'re ready.',
       });
     }
-  }, [timeElapsed, earnCoins, options]);
+  }, [timeElapsed, earnCoins, options, contextEndSession]);
 
   const resetSession = useCallback(() => {
     setIsActive(false);
     setIsPaused(false);
     setTimeElapsed(0);
-  }, []);
+    
+    // End session in context
+    contextEndSession(false);
+  }, [contextEndSession]);
 
   // Timer logic
   useEffect(() => {

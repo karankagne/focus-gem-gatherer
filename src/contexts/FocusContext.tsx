@@ -9,11 +9,13 @@ interface FocusContextType {
   focusSessions: number;
   coins: number;
   streakDays: number;
+  allowedApps: string[]; // New: Array of package names allowed during focus
   startFocusSession: (minutes: number) => void;
   endFocusSession: (completed?: boolean) => void;
   updateSessionTime: (seconds: number) => void;
   earnCoins: (amount: number) => void;
   spendCoins: (amount: number) => boolean;
+  toggleAllowedApp: (packageName: string) => void; // New: Toggle app in allowed list
 }
 
 const FocusContext = createContext<FocusContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
   const [focusSessions, setFocusSessions] = useState(0);
   const [coins, setCoins] = useState(120); // Starting coins
   const [streakDays, setStreakDays] = useState(3); // Starting streak
+  const [allowedApps, setAllowedApps] = useState<string[]>([]); // New: Store allowed apps
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -48,6 +51,7 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
         setFocusSessions(data.focusSessions || 0);
         setCoins(data.coins || 0);
         setStreakDays(data.streakDays || 0);
+        setAllowedApps(data.allowedApps || []); // Load allowed apps
       } catch (error) {
         console.error('Error loading focus data:', error);
       }
@@ -61,9 +65,10 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
       focusSessions,
       coins,
       streakDays,
+      allowedApps, // Save allowed apps
     };
     localStorage.setItem('focusData', JSON.stringify(dataToSave));
-  }, [totalFocusTime, focusSessions, coins, streakDays]);
+  }, [totalFocusTime, focusSessions, coins, streakDays, allowedApps]);
 
   const startFocusSession = (minutes: number) => {
     setIsInFocusSession(true);
@@ -106,6 +111,15 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
     return false;
   };
 
+  // New: Toggle an app in the allowed list
+  const toggleAllowedApp = (packageName: string) => {
+    setAllowedApps(prev => 
+      prev.includes(packageName)
+        ? prev.filter(app => app !== packageName)
+        : [...prev, packageName]
+    );
+  };
+
   return (
     <FocusContext.Provider
       value={{
@@ -115,11 +129,13 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
         focusSessions,
         coins,
         streakDays,
+        allowedApps,
         startFocusSession,
         endFocusSession,
         updateSessionTime,
         earnCoins,
         spendCoins,
+        toggleAllowedApp,
       }}
     >
       {children}

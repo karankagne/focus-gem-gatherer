@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AlarmClock, Coins, Lock } from 'lucide-react';
 import Header from '@/components/layout/Header';
@@ -9,18 +9,36 @@ import GlassCard from '@/components/ui/GlassCard';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { useFocus } from '@/contexts/FocusContext';
 import { Button } from '@/components/ui/button';
+import { useFocusSession } from '@/hooks/useFocusSession';
 
 const Index = () => {
   const { 
     totalFocusTime, 
     focusSessions, 
     coins, 
-    streakDays 
+    streakDays,
+    isInFocusSession
   } = useFocus();
   
   const [sessionDuration, setSessionDuration] = useState(25); // Default to 25 minutes
   
   const durations = [15, 25, 45, 60];
+  
+  const {
+    startSession,
+    isActive,
+    timeRemaining,
+    progress,
+    endSession,
+    pauseSession,
+    confirmPauseSession,
+    cancelPauseSession,
+    resetSession,
+    isStopConfirmationOpen,
+    setIsStopConfirmationOpen
+  } = useFocusSession({
+    initialDuration: sessionDuration,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary pb-20 sm:pb-0 sm:pt-16">
@@ -71,10 +89,10 @@ const Index = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.3 }}
           >
-            <GlassCard className="text-center">
-              <Lock className="h-6 w-6 mx-auto mb-2 text-accent" />
-              <div className="text-2xl font-bold">5</div>
-              <div className="text-xs text-muted-foreground">Apps blocked</div>
+            <GlassCard className={cn("text-center", isInFocusSession ? "border-focus/30" : "")}>
+              <Lock className={cn("h-6 w-6 mx-auto mb-2", isInFocusSession ? "text-focus" : "text-accent")} />
+              <div className="text-2xl font-bold">{isInFocusSession ? "ON" : "OFF"}</div>
+              <div className="text-xs text-muted-foreground">App blocking</div>
             </GlassCard>
           </motion.div>
           
@@ -99,19 +117,24 @@ const Index = () => {
         >
           <div className="mb-4">
             <div className="flex justify-center space-x-2 mb-6">
-              {durations.map((minutes) => (
+              {!isActive && durations.map((minutes) => (
                 <Button
                   key={minutes}
                   variant={sessionDuration === minutes ? "default" : "outline"}
                   onClick={() => setSessionDuration(minutes)}
                   className="rounded-full"
+                  disabled={isActive}
                 >
                   {minutes} min
                 </Button>
               ))}
             </div>
             <div className="flex justify-center">
-              <FocusTimer initialTime={sessionDuration} />
+              <FocusTimer 
+                initialTime={sessionDuration}
+                onComplete={() => endSession(true)}
+                onTimeUpdate={() => {}} 
+              />
             </div>
           </div>
         </motion.div>
@@ -127,5 +150,9 @@ const Index = () => {
     </div>
   );
 };
+
+// Helper function to add conditional class names
+const cn = (...classes: (string | boolean | undefined)[]) => 
+  classes.filter(Boolean).join(' ');
 
 export default Index;

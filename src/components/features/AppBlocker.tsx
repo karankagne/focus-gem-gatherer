@@ -1,15 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Lock, Plus, X, Check, AlertCircle, Bell, BellOff, Search } from 'lucide-react';
+import { Lock, X, Check, AlertCircle, Bell, BellOff, Search, ShieldOff } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Capacitor } from '@capacitor/core';
 import NotificationBlocker, { InstalledApp } from '@/plugins/NotificationBlocker';
+import { useFocus } from '@/contexts/FocusContext';
 
 interface AppData {
   id: string;
@@ -27,11 +29,14 @@ interface AppBlockerProps {
 const AppBlocker = ({ className }: AppBlockerProps) => {
   const [apps, setApps] = useState<AppData[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isAllowedAppsDialogOpen, setIsAllowedAppsDialogOpen] = useState(false);
   const [newAppName, setNewAppName] = useState('');
   const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const isNative = Capacitor.isNativePlatform();
+  
+  const { isInFocusSession, allowedApps, toggleAllowedApp } = useFocus();
 
   // Check notification permission and load apps on component mount
   useEffect(() => {
@@ -47,6 +52,13 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
     
     initializeApps();
   }, []);
+
+  // Show allowed apps dialog when starting a focus session
+  useEffect(() => {
+    if (isInFocusSession && !isAllowedAppsDialogOpen) {
+      setIsAllowedAppsDialogOpen(true);
+    }
+  }, [isInFocusSession]);
 
   const fetchInstalledApps = async () => {
     setIsLoading(true);
@@ -160,6 +172,11 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
     }
   };
 
+  // Handle toggling app in allowed list during focus mode
+  const handleAllowedAppToggle = (packageName: string) => {
+    toggleAllowedApp(packageName);
+  };
+
   // Filter apps based on search query
   const filteredApps = apps.filter(app => 
     app.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -169,9 +186,25 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Blocked Apps</h2>
-          <p className="text-muted-foreground">Apps that will be inaccessible during focus time</p>
+          <h2 className="text-2xl font-semibold tracking-tight">App Control</h2>
+          <p className="text-muted-foreground">
+            {isInFocusSession 
+              ? "All apps are blocked during focus sessions except allowed ones" 
+              : "Manage apps and notifications for focus time"}
+          </p>
         </div>
+        
+        {isInFocusSession && (
+          <Button 
+            onClick={() => setIsAllowedAppsDialogOpen(true)} 
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+          >
+            <ShieldOff className="h-4 w-4 mr-1" />
+            Allowed Apps
+          </Button>
+        )}
       </div>
 
       {!hasPermission && isNative && (
@@ -232,41 +265,59 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filteredApps.map((app) => (
-            <GlassCard 
-              key={app.id} 
-              className={cn(
-                "flex items-center gap-3 p-4",
-                app.isBlocked || app.blockNotifications ? "border-focus/20" : "border-transparent opacity-70"
-              )}
-            >
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-accent/10 text-xl">
-                {app.icon}
-              </div>
-              <div className="flex-grow">
-                <div className="font-medium">{app.name}</div>
-                <div className="text-xs text-muted-foreground">{app.packageName}</div>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="flex items-center gap-1.5">
-                    <Switch 
-                      checked={app.isBlocked} 
-                      onCheckedChange={() => toggleAppBlock(app.id)}
-                      className="mr-1"
-                    />
-                    <span className="text-xs">Block app</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Switch 
-                      checked={app.blockNotifications} 
-                      onCheckedChange={() => toggleNotificationBlock(app.id)}
-                      className="mr-1"
-                    />
-                    <span className="text-xs">Block notifications</span>
+          {filteredApps.map((app) => {
+            const isAllowed = allowedApps.includes(app.packageName);
+            return (
+              <GlassCard 
+                key={app.id} 
+                className={cn(
+                  "flex items-center gap-3 p-4",
+                  (app.isBlocked || app.blockNotifications || (isInFocusSession && !isAllowed)) 
+                    ? "border-focus/20" 
+                    : "border-transparent opacity-70"
+                )}
+              >
+                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-accent/10 text-xl">
+                  {app.icon}
+                </div>
+                <div className="flex-grow">
+                  <div className="font-medium">{app.name}</div>
+                  <div className="text-xs text-muted-foreground">{app.packageName}</div>
+                  <div className="flex items-center gap-3 mt-1">
+                    {isInFocusSession ? (
+                      <div className="flex items-center gap-1.5">
+                        <Switch 
+                          checked={isAllowed} 
+                          onCheckedChange={() => handleAllowedAppToggle(app.packageName)}
+                          className="mr-1"
+                        />
+                        <span className="text-xs">Allow during focus</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1.5">
+                          <Switch 
+                            checked={app.isBlocked} 
+                            onCheckedChange={() => toggleAppBlock(app.id)}
+                            className="mr-1"
+                          />
+                          <span className="text-xs">Block app</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Switch 
+                            checked={app.blockNotifications} 
+                            onCheckedChange={() => toggleNotificationBlock(app.id)}
+                            className="mr-1"
+                          />
+                          <span className="text-xs">Block notifications</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
-              </div>
-            </GlassCard>
-          ))}
+              </GlassCard>
+            );
+          })}
         </div>
       )}
 
@@ -278,6 +329,50 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
           </p>
         </div>
       )}
+
+      {/* Dialog for selecting allowed apps when focus session starts */}
+      <Dialog open={isAllowedAppsDialogOpen} onOpenChange={(open) => {
+        // Only allow closing if not in focus session
+        if (!isInFocusSession || open) {
+          setIsAllowedAppsDialogOpen(open);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Apps to Allow During Focus</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 max-h-[60vh] overflow-y-auto">
+            <p className="text-sm text-muted-foreground mb-4">
+              All apps are blocked by default during focus sessions. Select apps that you need to keep accessible:
+            </p>
+            <div className="space-y-3">
+              {apps.map((app) => (
+                <div key={app.packageName} className="flex items-center space-x-3">
+                  <Checkbox 
+                    id={app.packageName} 
+                    checked={allowedApps.includes(app.packageName)}
+                    onCheckedChange={() => handleAllowedAppToggle(app.packageName)}
+                  />
+                  <label htmlFor={app.packageName} className="font-medium text-sm cursor-pointer flex items-center">
+                    <span className="mr-2">{app.icon}</span>
+                    {app.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            {!isInFocusSession && (
+              <Button variant="outline" onClick={() => setIsAllowedAppsDialogOpen(false)}>
+                Close
+              </Button>
+            )}
+            <Button onClick={() => setIsAllowedAppsDialogOpen(false)} className="bg-focus hover:bg-focus-dark text-white">
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-md">
