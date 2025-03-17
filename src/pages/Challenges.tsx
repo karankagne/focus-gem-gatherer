@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { WifiOff, Wifi } from 'lucide-react';
 import CreateChallengeDialog from '@/components/features/CreateChallengeDialog';
 import FindUsersDialog from '@/components/features/FindUsersDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Sample challenges data
 const sampleChallenges = [
@@ -69,6 +70,7 @@ const Challenges = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'solo' | 'group'>('all');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [hasOfflinePendingJoins, setHasOfflinePendingJoins] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const pendingJoins = localStorage.getItem(OFFLINE_STORAGE_KEY);
@@ -189,12 +191,13 @@ const Challenges = () => {
           transition={{ duration: 0.5 }}
           className="mb-6"
         >
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
             <div>
               <h1 className="text-3xl font-bold tracking-tight mb-2">Challenges</h1>
               <p className="text-muted-foreground">Complete challenges to earn extra rewards</p>
             </div>
-            <div className="flex gap-2">
+            
+            <div className={`flex ${isMobile ? 'flex-row' : 'gap-2'} ${isMobile ? 'mt-2 justify-between' : ''}`}>
               <FindUsersDialog />
               <CreateChallengeDialog onCreateChallenge={handleCreateChallenge} />
             </div>
