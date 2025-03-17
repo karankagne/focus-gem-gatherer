@@ -1,0 +1,128 @@
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'sonner';
+
+interface FocusContextType {
+  isInFocusSession: boolean;
+  sessionTimeRemaining: number;
+  totalFocusTime: number;
+  focusSessions: number;
+  coins: number;
+  streakDays: number;
+  startFocusSession: (minutes: number) => void;
+  endFocusSession: (completed?: boolean) => void;
+  updateSessionTime: (seconds: number) => void;
+  earnCoins: (amount: number) => void;
+  spendCoins: (amount: number) => boolean;
+}
+
+const FocusContext = createContext<FocusContextType | undefined>(undefined);
+
+export const useFocus = () => {
+  const context = useContext(FocusContext);
+  if (!context) {
+    throw new Error('useFocus must be used within a FocusProvider');
+  }
+  return context;
+};
+
+interface FocusProviderProps {
+  children: React.ReactNode;
+}
+
+export const FocusProvider = ({ children }: FocusProviderProps) => {
+  const [isInFocusSession, setIsInFocusSession] = useState(false);
+  const [sessionTimeRemaining, setSessionTimeRemaining] = useState(0);
+  const [totalFocusTime, setTotalFocusTime] = useState(0);
+  const [focusSessions, setFocusSessions] = useState(0);
+  const [coins, setCoins] = useState(120); // Starting coins
+  const [streakDays, setStreakDays] = useState(3); // Starting streak
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('focusData');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        setTotalFocusTime(data.totalFocusTime || 0);
+        setFocusSessions(data.focusSessions || 0);
+        setCoins(data.coins || 0);
+        setStreakDays(data.streakDays || 0);
+      } catch (error) {
+        console.error('Error loading focus data:', error);
+      }
+    }
+  }, []);
+
+  // Save data to localStorage when it changes
+  useEffect(() => {
+    const dataToSave = {
+      totalFocusTime,
+      focusSessions,
+      coins,
+      streakDays,
+    };
+    localStorage.setItem('focusData', JSON.stringify(dataToSave));
+  }, [totalFocusTime, focusSessions, coins, streakDays]);
+
+  const startFocusSession = (minutes: number) => {
+    setIsInFocusSession(true);
+    setSessionTimeRemaining(minutes * 60);
+  };
+
+  const endFocusSession = (completed = false) => {
+    if (completed) {
+      // Calculate coins based on session length
+      const sessionMinutes = Math.floor((sessionTimeRemaining) / 60);
+      const earnedCoins = sessionMinutes;
+      earnCoins(earnedCoins);
+      
+      // Update session stats
+      setFocusSessions(prev => prev + 1);
+      setTotalFocusTime(prev => prev + sessionMinutes);
+      
+      toast.success(`Session completed! +${earnedCoins} coins`, {
+        description: `You've completed ${focusSessions + 1} sessions in total.`
+      });
+    }
+    
+    setIsInFocusSession(false);
+    setSessionTimeRemaining(0);
+  };
+
+  const updateSessionTime = (seconds: number) => {
+    setSessionTimeRemaining(seconds);
+  };
+
+  const earnCoins = (amount: number) => {
+    setCoins(prev => prev + amount);
+  };
+
+  const spendCoins = (amount: number) => {
+    if (coins >= amount) {
+      setCoins(prev => prev - amount);
+      return true;
+    }
+    return false;
+  };
+
+  return (
+    <FocusContext.Provider
+      value={{
+        isInFocusSession,
+        sessionTimeRemaining,
+        totalFocusTime,
+        focusSessions,
+        coins,
+        streakDays,
+        startFocusSession,
+        endFocusSession,
+        updateSessionTime,
+        earnCoins,
+        spendCoins,
+      }}
+    >
+      {children}
+    </FocusContext.Provider>
+  );
+};
