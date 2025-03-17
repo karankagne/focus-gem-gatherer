@@ -1,13 +1,4 @@
 
-# FocusBuddy - Boost Your Productivity
-
-<div align="center">
-  <img src="public/og-image.png" alt="FocusBuddy App" width="600">
-  <p><i>Block distractions. Earn rewards. Stay focused.</i></p>
-</div>
-
-## 👋 About Me
-
 Hi, I'm Shivkaran! I leverage AI agents to build applications efficiently and effectively. My approach combines traditional development expertise with cutting-edge AI tools to streamline the development process, reduce boilerplate, and focus on creating value for users.
 
 I believe that the future of development includes AI-assisted workflows that help create better software faster. This project demonstrates how I use modern tools to build cross-platform applications with clean, maintainable code.
