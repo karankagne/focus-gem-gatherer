@@ -1,3 +1,4 @@
+
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
@@ -26,6 +27,9 @@ function App() {
             <Route path="/connect/:userId" element={<Friends />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <footer className="text-center py-4 text-sm text-muted-foreground">
+            with ❤️ from Shivkaran Kagne :)
+          </footer>
         </Router>
         <Toaster />
       </FocusProvider>
