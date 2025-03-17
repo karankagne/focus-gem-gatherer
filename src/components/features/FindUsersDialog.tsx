@@ -14,22 +14,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
+// Define the FriendStatus type
+type FriendStatus = 'none' | 'requested' | 'friend';
+
+// Define the User interface
+interface User {
+  id: string;
+  name: string;
+  friendStatus: FriendStatus;
+}
+
 // Mock user data - in a real app, this would come from an API
-const mockUsers = [
+const mockUsers: User[] = [
   { id: 'u1', name: 'Alex Johnson', friendStatus: 'none' },
   { id: 'u2', name: 'Morgan Smith', friendStatus: 'none' },
   { id: 'u3', name: 'Jordan Lee', friendStatus: 'none' },
   { id: 'u4', name: 'Taylor Kim', friendStatus: 'none' },
   { id: 'u5', name: 'Casey Zhang', friendStatus: 'none' },
 ];
-
-type FriendStatus = 'none' | 'requested' | 'friend';
-
-interface User {
-  id: string;
-  name: string;
-  friendStatus: FriendStatus;
-}
 
 const FindUsersDialog = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,7 +45,7 @@ const FindUsersDialog = () => {
     setUsers(prevUsers => 
       prevUsers.map(user => 
         user.id === userId 
-          ? { ...user, friendStatus: 'requested' } 
+          ? { ...user, friendStatus: 'requested' as FriendStatus } 
           : user
       )
     );
