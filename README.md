@@ -1,69 +1,99 @@
-# Welcome to your Lovable project
 
-## Project info
+# FocusBuddy - Boost Your Productivity
 
-**URL**: https://lovable.dev/projects/ad0f3ad3-e14b-4417-8cff-239183d9707a
+<div align="center">
+  <img src="public/og-image.png" alt="FocusBuddy App" width="600">
+  <p><i>Block distractions. Earn rewards. Stay focused.</i></p>
+</div>
 
-## How can I edit this code?
+## 👋 About Me
 
-There are several ways of editing your application.
+Hi, I'm Shivkaran! I leverage AI agents to build applications efficiently and effectively. My approach combines traditional development expertise with cutting-edge AI tools to streamline the development process, reduce boilerplate, and focus on creating value for users.
 
-**Use Lovable**
+I believe that the future of development includes AI-assisted workflows that help create better software faster. This project demonstrates how I use modern tools to build cross-platform applications with clean, maintainable code.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ad0f3ad3-e14b-4417-8cff-239183d9707a) and start prompting.
+## 🚀 About FocusBuddy
 
-Changes made via Lovable will be committed automatically to this repo.
+FocusBuddy is a productivity application designed to help you stay focused and avoid distractions. It combines focus timing techniques with gamification elements to make productivity more engaging.
 
-**Use your preferred IDE**
+### Key Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Focus Timer**: Set custom focus sessions (15, 25, 45, or 60 minutes)
+- **App Blocker**: Block distracting applications during focus sessions
+- **Reward System**: Earn coins for completed focus sessions to unlock rewards
+- **Achievement Badges**: Track your progress with achievement badges
+- **Streak Tracking**: Build and maintain daily focus streaks
+- **Cross-Platform**: Works on web and Android
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 💻 Technologies
 
-Follow these steps:
+This project is built with:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- React + TypeScript
+- Vite for fast development and optimized builds
+- Tailwind CSS with shadcn/ui components
+- Framer Motion for smooth animations
+- Capacitor for cross-platform mobile deployment
+- React Router for navigation
+- React Query for efficient data fetching and state management
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 🔧 Setup & Development
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Prerequisites
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+- Node.js (v16 or higher)
+- npm or yarn
+- Android Studio (for Android development)
+
+### Web Development
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/focusbuddy.git
+cd focusbuddy
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Android Development
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Build the web app
+npm run build
 
-**Use GitHub Codespaces**
+# Add Android platform (first time only)
+npx cap add android
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Copy web assets to native project
+npx cap sync
 
-## What technologies are used for this project?
+# Open in Android Studio
+npx cap open android
+```
 
-This project is built with .
+## 📱 Mobile App
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+FocusBuddy is available as an Android application. The mobile version includes all features of the web app in a native mobile experience.
 
-## How can I deploy this project?
+## 🤝 Contributing
 
-Simply open [Lovable](https://lovable.dev/projects/ad0f3ad3-e14b-4417-8cff-239183d9707a) and click on Share -> Publish.
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/focusbuddy/issues).
 
-## I want to use a custom domain - is that possible?
+## 📝 License
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+This project is [MIT](LICENSE) licensed.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by Shivkaran</p>
+  <p>
+    <a href="https://twitter.com/yourtwitterhandle">Twitter</a> •
+    <a href="https://linkedin.com/in/yourlinkedinhandle">LinkedIn</a> •
+    <a href="https://github.com/yourgithubhandle">GitHub</a>
+  </p>
+</div>
