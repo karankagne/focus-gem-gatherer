@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
@@ -6,6 +5,8 @@ import ChallengeCard from '@/components/features/ChallengeCard';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { WifiOff, Wifi } from 'lucide-react';
+import CreateChallengeDialog from '@/components/features/CreateChallengeDialog';
+import FindUsersDialog from '@/components/features/FindUsersDialog';
 
 // Sample challenges data
 const sampleChallenges = [
@@ -69,7 +70,6 @@ const Challenges = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [hasOfflinePendingJoins, setHasOfflinePendingJoins] = useState(false);
 
-  // Check for pending offline joins on load
   useEffect(() => {
     const pendingJoins = localStorage.getItem(OFFLINE_STORAGE_KEY);
     setHasOfflinePendingJoins(!!pendingJoins && JSON.parse(pendingJoins).length > 0);
@@ -86,7 +86,6 @@ const Challenges = () => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Try to sync offline joins when component mounts and we're online
     if (navigator.onLine) {
       syncOfflineJoins();
     }
@@ -105,7 +104,6 @@ const Challenges = () => {
         const parsedJoins = JSON.parse(pendingJoins);
         
         if (parsedJoins.length > 0) {
-          // Process each offline join
           parsedJoins.forEach(challengeId => {
             setChallenges(prev => 
               prev.map(challenge => 
@@ -114,7 +112,6 @@ const Challenges = () => {
             );
           });
           
-          // Clear offline storage after processing
           localStorage.removeItem(OFFLINE_STORAGE_KEY);
           setHasOfflinePendingJoins(false);
           
@@ -138,7 +135,6 @@ const Challenges = () => {
 
   const handleJoinChallenge = (id: string, isOnline: boolean) => {
     if (isOnline) {
-      // Handle online join
       setChallenges(prev => 
         prev.map(challenge => 
           challenge.id === id ? { ...challenge, joined: true } : challenge
@@ -149,9 +145,7 @@ const Challenges = () => {
         description: 'Good luck and stay focused!',
       });
     } else {
-      // Handle offline join
       try {
-        // Add to local storage
         const pendingJoins = localStorage.getItem(OFFLINE_STORAGE_KEY);
         const joins = pendingJoins ? JSON.parse(pendingJoins) : [];
         
@@ -161,7 +155,6 @@ const Challenges = () => {
           setHasOfflinePendingJoins(true);
         }
         
-        // Update UI
         setChallenges(prev => 
           prev.map(challenge => 
             challenge.id === id ? { ...challenge, joined: true } : challenge
@@ -181,6 +174,10 @@ const Challenges = () => {
     }
   };
 
+  const handleCreateChallenge = (newChallenge: any) => {
+    setChallenges(prev => [newChallenge, ...prev]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary pb-20 sm:pb-0 sm:pt-16">
       <Header />
@@ -190,10 +187,18 @@ const Challenges = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="mb-6"
         >
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Challenges</h1>
-          <p className="text-muted-foreground">Complete challenges to earn extra rewards</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight mb-2">Challenges</h1>
+              <p className="text-muted-foreground">Complete challenges to earn extra rewards</p>
+            </div>
+            <div className="flex gap-2">
+              <FindUsersDialog />
+              <CreateChallengeDialog onCreateChallenge={handleCreateChallenge} />
+            </div>
+          </div>
           
           {!isOnline && (
             <div className="mt-2 flex items-center text-amber-500 text-sm">
