@@ -292,7 +292,7 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
           </svg>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 w-full max-w-full overflow-hidden">
           {filteredApps.map((app) => {
             const isAllowed = allowedApps.includes(app.packageName);
             
@@ -307,51 +307,54 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
               <GlassCard 
                 key={app.id} 
                 className={cn(
-                  "flex items-center gap-3 p-4",
+                  "flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 w-full",
                   (isAllowed) 
                     ? "border-green-500/20" 
                     : "border-transparent opacity-70"
                 )}
               >
-                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-accent/10 text-xl">
-                  {app.icon}
-                </div>
-                <div className="flex-grow">
-                  <div className="font-medium">{app.name}</div>
-                  <div className="text-xs text-muted-foreground">{app.packageName}</div>
-                  <div className="flex items-center gap-3 mt-1">
-                    <div className="flex items-center gap-1.5">
-                      <Switch 
-                        checked={isAllowed} 
-                        onCheckedChange={() => handleAllowedAppToggle(app.packageName)}
-                        className={cn("mr-1", isAllowed ? "bg-green-500" : "")}
-                      />
-                      <span className="text-xs">
-                        {isInFocusSession ? "Allow during focus" : "Allow during focus sessions"}
-                      </span>
-                    </div>
-                    
-                    {!isInFocusSession && activeView === 'blocked' && (
-                      <>
-                        <div className="flex items-center gap-1.5">
-                          <Switch 
-                            checked={app.isBlocked} 
-                            onCheckedChange={() => toggleAppBlock(app.id)}
-                            className="mr-1"
-                          />
-                          <span className="text-xs">Block app</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Switch 
-                            checked={app.blockNotifications} 
-                            onCheckedChange={() => toggleNotificationBlock(app.id)}
-                            className="mr-1"
-                          />
-                          <span className="text-xs">Block notifications</span>
-                        </div>
-                      </>
-                    )}
+                <div className="flex items-center gap-3 w-full">
+                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-accent/10 text-xl">
+                    {app.icon}
                   </div>
+                  <div className="flex-grow min-w-0">
+                    <div className="font-medium truncate">{app.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">{app.packageName}</div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-3 mt-2 sm:mt-0 w-full sm:w-auto">
+                  <div className="flex items-center gap-1.5">
+                    <Switch 
+                      checked={isAllowed} 
+                      onCheckedChange={() => handleAllowedAppToggle(app.packageName)}
+                      className={cn("mr-1", isAllowed ? "bg-green-500" : "")}
+                    />
+                    <span className="text-xs whitespace-nowrap">
+                      {isInFocusSession ? "Allow during focus" : "Allow"}
+                    </span>
+                  </div>
+                  
+                  {!isInFocusSession && activeView === 'blocked' && (
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <Switch 
+                          checked={app.isBlocked} 
+                          onCheckedChange={() => toggleAppBlock(app.id)}
+                          className="mr-1"
+                        />
+                        <span className="text-xs whitespace-nowrap">Block app</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Switch 
+                          checked={app.blockNotifications} 
+                          onCheckedChange={() => toggleNotificationBlock(app.id)}
+                          className="mr-1"
+                        />
+                        <span className="text-xs whitespace-nowrap">Block notifications</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </GlassCard>
             );
