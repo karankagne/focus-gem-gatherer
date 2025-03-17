@@ -90,7 +90,7 @@ const Friends = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary pb-20 sm:pb-0 sm:pt-16">
       <Header />
 
-      <main className="max-w-screen-md mx-auto px-4 py-6">
+      <main className="max-w-screen-md mx-auto px-4 py-6 pt-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,7 +126,7 @@ const Friends = () => {
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList>
+          <TabsList className="w-full max-w-full overflow-x-auto">
             <TabsTrigger value="all" className="relative">
               All
               {friends.length > 0 && (
@@ -238,9 +238,11 @@ interface FriendCardProps {
 }
 
 const FriendCard = ({ friend, onAccept, onDecline, onCancel, onRemove }: FriendCardProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <GlassCard className="p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <Avatar>
             <AvatarFallback>
@@ -261,7 +263,7 @@ const FriendCard = ({ friend, onAccept, onDecline, onCancel, onRemove }: FriendC
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className={`flex gap-2 ${isMobile ? 'w-full mt-2 justify-center' : ''}`}>
           {friend.status === 'incoming' && (
             <>
               <Button size="sm" variant="default" onClick={() => onAccept?.(friend.id)}>
