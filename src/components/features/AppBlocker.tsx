@@ -205,7 +205,7 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
                   <Switch 
                     checked={app.isBlocked} 
                     onCheckedChange={() => toggleAppBlock(app.id)}
-                    size="sm"
+                    className="mr-1"
                   />
                   <span className="text-xs">Block app</span>
                 </div>
@@ -213,7 +213,7 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
                   <Switch 
                     checked={app.blockNotifications} 
                     onCheckedChange={() => toggleNotificationBlock(app.id)}
-                    size="sm"
+                    className="mr-1"
                   />
                   <span className="text-xs">Block notifications</span>
                 </div>
