@@ -1,5 +1,4 @@
-
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 
 export interface InstalledApp {
   packageName: string;
@@ -15,26 +14,36 @@ export interface NotificationBlockerPlugin {
   getInstalledApps(): Promise<{ apps: InstalledApp[] }>;
 }
 
-// This is a mock implementation for web
-const NotificationBlocker = {
+const NotificationBlockerWeb = {
   blockAppNotifications: async ({ packageName }: { packageName: string }): Promise<{ success: boolean }> => {
     console.log(`[Web Mock] Blocking notifications for: ${packageName}`);
-    return { success: Capacitor.isNativePlatform() ? false : true };
+    return { success: true };
   },
   
   unblockAppNotifications: async ({ packageName }: { packageName: string }): Promise<{ success: boolean }> => {
     console.log(`[Web Mock] Unblocking notifications for: ${packageName}`);
-    return { success: Capacitor.isNativePlatform() ? false : true };
+    return { success: true };
   },
   
   checkNotificationPermission: async (): Promise<{ hasPermission: boolean }> => {
     console.log('[Web Mock] Checking notification permission');
-    return { hasPermission: Capacitor.isNativePlatform() ? false : true };
+    // For web, check if notification permission is granted
+    if ('Notification' in window) {
+      return { hasPermission: Notification.permission === 'granted' };
+    }
+    return { hasPermission: false };
   },
   
   requestNotificationPermission: async (): Promise<{ granted: boolean }> => {
     console.log('[Web Mock] Requesting notification permission');
-    return { granted: Capacitor.isNativePlatform() ? false : true };
+    
+    // For web, use the Notification API
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      return { granted: permission === 'granted' };
+    }
+    
+    return { granted: false };
   },
   
   getInstalledApps: async (): Promise<{ apps: InstalledApp[] }> => {
@@ -53,5 +62,10 @@ const NotificationBlocker = {
     return { apps: mockApps };
   }
 };
+
+// Register the plugin using Capacitor's plugin system
+const NotificationBlocker = Capacitor.isNativePlatform()
+  ? registerPlugin<NotificationBlockerPlugin>('NotificationBlocker')
+  : NotificationBlockerWeb;
 
 export default NotificationBlocker;
