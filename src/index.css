@@ -128,7 +128,7 @@
   }
   
   .badge {
-    @apply inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-light/10 text-accent-dark;
+    @apply inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent-dark;
   }
   
   .interactive {
