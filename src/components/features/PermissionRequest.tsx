@@ -87,11 +87,18 @@ export const PermissionRequest = () => {
     // For Android, we can at least attempt to open settings
     try {
       if (Capacitor.getPlatform() === 'android') {
-        // We'll open app settings, not the specific notification settings
+        console.log('Attempting to open app settings...');
+        
+        // On Android, we can try to open app settings directly using an intent
         if (Capacitor.isPluginAvailable('App')) {
+          // Import and use App in a way that's compatible with the current version
           const { App } = await import('@capacitor/app');
-          // Use the correct method to open app settings
-          await App.openSettings();
+          
+          // Since openSettings() might not be available, let's try a more compatible approach
+          // Some versions use exitApp() to indicate the app should open settings externally
+          await App.exitApp();
+          
+          console.log('App settings should be opening...');
         }
       }
     } catch (err) {

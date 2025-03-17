@@ -6,7 +6,9 @@ const config: CapacitorConfig = {
   appName: 'focus-gem-gatherer',
   webDir: 'dist',
   server: {
-    url: 'https://ad0f3ad3-e14b-4417-8cff-239183d9707a.lovableproject.com?forceHideBadge=true',
+    // Use localhost for development
+    androidScheme: 'https',
+    allowNavigation: ['*'],
     cleartext: true
   },
   plugins: {
