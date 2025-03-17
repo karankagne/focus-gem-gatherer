@@ -88,10 +88,10 @@ export const PermissionRequest = () => {
     // For Android, we can at least attempt to open settings
     try {
       if (Capacitor.getPlatform() === 'android') {
-        // We'll open notification settings directly
+        // We'll open app settings, not the specific notification settings
         if (Capacitor.isPluginAvailable('App')) {
           const { App } = await import('@capacitor/app');
-          await App.openUrl({ url: 'package:' + Capacitor.getPluginPlatform() });
+          await App.openUrl({ url: 'package:' + Capacitor.getConfig().appId });
         }
       }
     } catch (err) {
