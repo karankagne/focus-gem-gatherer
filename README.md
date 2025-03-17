@@ -1,4 +1,6 @@
 
+# FocusBuddy
+
 Hi, I'm Shivkaran! I leverage AI agents to build applications efficiently and effectively. My approach combines traditional development expertise with cutting-edge AI tools to streamline the development process, reduce boilerplate, and focus on creating value for users.
 
 I believe that the future of development includes AI-assisted workflows that help create better software faster. This project demonstrates how I use modern tools to build cross-platform applications with clean, maintainable code.
@@ -11,6 +13,7 @@ FocusBuddy is a productivity application designed to help you stay focused and a
 
 - **Focus Timer**: Set custom focus sessions (15, 25, 45, or 60 minutes)
 - **App Blocker**: Block distracting applications during focus sessions
+- **Notification Control**: Block notifications from distracting apps to minimize interruptions
 - **Reward System**: Earn coins for completed focus sessions to unlock rewards
 - **Achievement Badges**: Track your progress with achievement badges
 - **Streak Tracking**: Build and maintain daily focus streaks
@@ -68,7 +71,11 @@ npx cap open android
 
 ## 📱 Mobile App
 
-FocusBuddy is available as an Android application. The mobile version includes all features of the web app in a native mobile experience.
+FocusBuddy is available as an Android application. The mobile version includes all features of the web app in a native mobile experience, including:
+
+- **App Blocking**: Prevent access to distracting apps during focus time
+- **Notification Blocking**: Silence notifications from selected apps
+- **Background Operation**: Focus timer continues running even when the app is in the background
 
 ## 🤝 Contributing
 

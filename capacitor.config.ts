@@ -10,7 +10,10 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   plugins: {
-    // Add any plugin configuration here
+    // Add notification control capabilities
+    Permissions: {
+      notifications: true
+    }
   }
 };
 
