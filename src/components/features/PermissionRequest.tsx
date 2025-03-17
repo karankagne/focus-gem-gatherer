@@ -85,8 +85,19 @@ export const PermissionRequest = () => {
   };
 
   const openAppSettings = async () => {
-    // This function would ideally open the app settings
-    // For now we'll just close the dialog
+    // For Android, we can at least attempt to open settings
+    try {
+      if (Capacitor.getPlatform() === 'android') {
+        // We'll open notification settings directly
+        if (Capacitor.isPluginAvailable('App')) {
+          const { App } = await import('@capacitor/app');
+          await App.openUrl({ url: 'package:' + Capacitor.getPluginPlatform() });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to open settings:', err);
+    }
+    
     toast.info('Please open app settings and enable notifications for Focus Gem Gatherer');
     setOpen(false);
   };
