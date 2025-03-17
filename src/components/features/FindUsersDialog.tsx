@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, UserPlus, Check } from 'lucide-react';
+import { Search, UserPlus, Check, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -13,6 +13,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 // Define the FriendStatus type
 type FriendStatus = 'none' | 'requested' | 'friend';
@@ -36,6 +38,7 @@ const mockUsers: User[] = [
 const FindUsersDialog = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<User[]>(mockUsers);
+  const [copied, setCopied] = useState(false);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -58,6 +61,17 @@ const FindUsersDialog = () => {
     }
   };
 
+  const copyFriendLink = () => {
+    // In a real app, this would be a unique user identifier
+    navigator.clipboard.writeText(`https://app.focusgem.com/connect/user123`);
+    setCopied(true);
+    toast.success('Friend link copied!', {
+      description: 'Share this link with your friends to connect',
+    });
+    
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const filteredUsers = searchQuery
     ? users.filter(user => 
         user.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -78,6 +92,34 @@ const FindUsersDialog = () => {
         </DialogHeader>
         
         <div className="space-y-4">
+          <div className="p-3 bg-muted rounded-md">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <h3 className="text-sm font-medium">Share your friend link</h3>
+                <p className="text-xs text-muted-foreground">Let others connect with you directly</p>
+              </div>
+              <Badge variant="outline">Your Link</Badge>
+            </div>
+            <div className="flex mt-2">
+              <Input 
+                value="https://app.focusgem.com/connect/user123" 
+                readOnly 
+                className="flex-1 bg-background text-xs"
+              />
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="ml-2 gap-1"
+                onClick={copyFriendLink}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? 'Copied' : 'Copy'}
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+          
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -128,6 +170,15 @@ const FindUsersDialog = () => {
                 No users found with that name
               </div>
             )}
+          </div>
+          
+          <Separator />
+          
+          <div className="text-center pt-2">
+            <Button variant="link" className="gap-1 text-xs">
+              <ExternalLink size={12} />
+              View all friends
+            </Button>
           </div>
         </div>
       </DialogContent>
