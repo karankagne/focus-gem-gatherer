@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Trophy, Star, Clock, EyeOff, Fire } from 'lucide-react';
+import { Trophy, Star, Clock, EyeOff, Flame } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 
 interface Badge {
@@ -88,7 +88,7 @@ export const SampleBadges: Badge[] = [
     id: '2',
     name: 'Focus Streak',
     description: 'Complete 3 sessions in a row',
-    icon: <Fire className="h-6 w-6" />,
+    icon: <Flame className="h-6 w-6" />,
     unlocked: true,
     level: 'silver',
   },
