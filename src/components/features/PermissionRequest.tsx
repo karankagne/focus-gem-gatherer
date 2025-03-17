@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { 
   AlertDialog,
@@ -91,7 +90,8 @@ export const PermissionRequest = () => {
         // We'll open app settings, not the specific notification settings
         if (Capacitor.isPluginAvailable('App')) {
           const { App } = await import('@capacitor/app');
-          await App.openUrl({ url: 'package:' + Capacitor.getConfig().appId });
+          // Use the correct method to open app settings
+          await App.openSettings();
         }
       }
     } catch (err) {
