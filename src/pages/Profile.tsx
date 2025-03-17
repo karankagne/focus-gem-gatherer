@@ -109,11 +109,11 @@ const Profile = () => {
             Weekly Focus
           </h2>
           <GlassCard className="p-6">
-            <div className="flex h-40 items-end justify-between gap-2">
+            <div className="flex h-40 items-end justify-between overflow-x-auto w-full px-2">
               {weeklyData.map((hours, index) => (
-                <div key={index} className="flex flex-col items-center">
+                <div key={index} className="flex flex-col items-center min-w-[40px]">
                   <div 
-                    className="w-10 bg-focus rounded-t-md transition-all duration-500"
+                    className="w-8 bg-focus rounded-t-md transition-all duration-500"
                     style={{ 
                       height: `${(hours / maxWeeklyHours) * 100}%`,
                       opacity: 0.6 + (hours / maxWeeklyHours) * 0.4

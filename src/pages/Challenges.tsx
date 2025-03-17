@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
@@ -197,7 +198,7 @@ const Challenges = () => {
               <p className="text-muted-foreground">Complete challenges to earn extra rewards</p>
             </div>
             
-            <div className={`flex ${isMobile ? 'flex-row' : 'gap-2'} ${isMobile ? 'mt-2 justify-between' : ''}`}>
+            <div className="flex flex-wrap gap-2 mt-2">
               <FindUsersDialog />
               <CreateChallengeDialog onCreateChallenge={handleCreateChallenge} />
             </div>
@@ -218,7 +219,7 @@ const Challenges = () => {
           )}
         </motion.div>
 
-        <div className="flex gap-2 mb-6 overflow-x-auto">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <Button
             variant={activeTab === 'all' ? "default" : "outline"}
             onClick={() => setActiveTab('all')}
