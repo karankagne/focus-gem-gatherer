@@ -135,10 +135,6 @@ const Profile = () => {
           <BadgeDisplay badges={SampleBadges} />
         </motion.div>
       </main>
-      
-      <footer className="text-center py-4 text-sm text-muted-foreground mt-8">
-        with ❤️ from Shivkaran Kagne :)
-      </footer>
     </div>
   );
 };
