@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Lock, X, Check, AlertCircle, Bell, BellOff, Search, ShieldOff } from 'lucide-react';
+import { Lock, Check, AlertCircle, Bell, BellOff, Search, ShieldOff, CheckCircle2 } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Capacitor } from '@capacitor/core';
 import NotificationBlocker, { InstalledApp } from '@/plugins/NotificationBlocker';
 import { useFocus } from '@/contexts/FocusContext';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface AppData {
   id: string;
@@ -34,6 +35,7 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeView, setActiveView] = useState<'allowed' | 'blocked'>('allowed');
   const isNative = Capacitor.isNativePlatform();
   
   const { isInFocusSession, allowedApps, toggleAllowedApp } = useFocus();
@@ -175,6 +177,19 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
   // Handle toggling app in allowed list during focus mode
   const handleAllowedAppToggle = (packageName: string) => {
     toggleAllowedApp(packageName);
+    
+    const app = apps.find(app => app.packageName === packageName);
+    if (app) {
+      const isNowAllowed = !allowedApps.includes(packageName);
+      toast(
+        isNowAllowed 
+          ? `${app.name} will be accessible during focus` 
+          : `${app.name} will be blocked during focus`,
+        {
+          icon: isNowAllowed ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Lock className="h-4 w-4" />
+        }
+      );
+    }
   };
 
   // Filter apps based on search query
@@ -189,8 +204,8 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
           <h2 className="text-2xl font-semibold tracking-tight">App Control</h2>
           <p className="text-muted-foreground">
             {isInFocusSession 
-              ? "All apps are blocked during focus sessions except allowed ones" 
-              : "Manage apps and notifications for focus time"}
+              ? "Select which apps you want to access during focus time" 
+              : "Manage which apps are allowed during focus sessions"}
           </p>
         </div>
         
@@ -206,6 +221,19 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
           </Button>
         )}
       </div>
+
+      {!isInFocusSession && (
+        <ToggleGroup type="single" value={activeView} onValueChange={(value) => value && setActiveView(value as 'allowed' | 'blocked')} className="justify-start mb-4">
+          <ToggleGroupItem value="allowed" className="text-xs">
+            <CheckCircle2 className="h-4 w-4 mr-1" />
+            Allowed Apps
+          </ToggleGroupItem>
+          <ToggleGroupItem value="blocked" className="text-xs">
+            <Lock className="h-4 w-4 mr-1" />
+            Blocked Apps
+          </ToggleGroupItem>
+        </ToggleGroup>
+      )}
 
       {!hasPermission && isNative && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-4">
@@ -267,13 +295,21 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredApps.map((app) => {
             const isAllowed = allowedApps.includes(app.packageName);
+            
+            // Only show apps based on selected view if not in focus session
+            if (!isInFocusSession && 
+                ((activeView === 'allowed' && !isAllowed) || 
+                 (activeView === 'blocked' && isAllowed))) {
+              return null;
+            }
+            
             return (
               <GlassCard 
                 key={app.id} 
                 className={cn(
                   "flex items-center gap-3 p-4",
-                  (app.isBlocked || app.blockNotifications || (isInFocusSession && !isAllowed)) 
-                    ? "border-focus/20" 
+                  (isAllowed) 
+                    ? "border-green-500/20" 
                     : "border-transparent opacity-70"
                 )}
               >
@@ -284,16 +320,18 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
                   <div className="font-medium">{app.name}</div>
                   <div className="text-xs text-muted-foreground">{app.packageName}</div>
                   <div className="flex items-center gap-3 mt-1">
-                    {isInFocusSession ? (
-                      <div className="flex items-center gap-1.5">
-                        <Switch 
-                          checked={isAllowed} 
-                          onCheckedChange={() => handleAllowedAppToggle(app.packageName)}
-                          className="mr-1"
-                        />
-                        <span className="text-xs">Allow during focus</span>
-                      </div>
-                    ) : (
+                    <div className="flex items-center gap-1.5">
+                      <Switch 
+                        checked={isAllowed} 
+                        onCheckedChange={() => handleAllowedAppToggle(app.packageName)}
+                        className={cn("mr-1", isAllowed ? "bg-green-500" : "")}
+                      />
+                      <span className="text-xs">
+                        {isInFocusSession ? "Allow during focus" : "Allow during focus sessions"}
+                      </span>
+                    </div>
+                    
+                    {!isInFocusSession && activeView === 'blocked' && (
                       <>
                         <div className="flex items-center gap-1.5">
                           <Switch 
@@ -321,11 +359,18 @@ const AppBlocker = ({ className }: AppBlockerProps) => {
         </div>
       )}
 
-      {!isLoading && filteredApps.length === 0 && (
+      {!isLoading && filteredApps.filter(app => {
+        if (isInFocusSession) return true;
+        return activeView === 'allowed' ? allowedApps.includes(app.packageName) : !allowedApps.includes(app.packageName);
+      }).length === 0 && (
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <AlertCircle className="h-10 w-10 text-muted-foreground mb-2" />
           <p className="text-muted-foreground">
-            {searchQuery ? 'No apps match your search' : 'No apps found on this device'}
+            {searchQuery 
+              ? 'No apps match your search' 
+              : activeView === 'allowed' 
+                ? 'No apps are currently allowed during focus' 
+                : 'All apps are currently allowed during focus'}
           </p>
         </div>
       )}
