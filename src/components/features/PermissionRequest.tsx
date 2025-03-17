@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { 
   AlertDialog,
@@ -102,6 +103,11 @@ export const PermissionRequest = () => {
               <div>
                 Focus Gem Gatherer needs notification access to help you stay focused and manage distractions.
                 This will allow the app to block notifications from distracting apps during focus sessions.
+                
+                <div className="mt-4 p-3 bg-amber-50 text-amber-800 rounded-md text-sm">
+                  <p className="font-medium">Important:</p>
+                  <p>You will be asked to grant notification listener permission. This is necessary for blocking notifications from other apps.</p>
+                </div>
               </div>
             )}
           </AlertDialogDescription>

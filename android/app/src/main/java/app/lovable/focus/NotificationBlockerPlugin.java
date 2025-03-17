@@ -1,7 +1,9 @@
+
 package app.lovable.focus;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -10,6 +12,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSArray;
@@ -23,6 +26,7 @@ import com.getcapacitor.annotation.PermissionCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @CapacitorPlugin(
     name = "NotificationBlocker",
@@ -37,6 +41,7 @@ public class NotificationBlockerPlugin extends Plugin {
     private static final String TAG = "NotificationBlocker";
     private static final int REQUEST_NOTIFICATION_PERMISSION = 1;
     private static final int REQUEST_NOTIFICATION_POLICY_ACCESS = 2;
+    private static final int REQUEST_NOTIFICATION_LISTENER_SETTINGS = 3;
     
     private PluginCall savedCall;
 
@@ -56,8 +61,12 @@ public class NotificationBlockerPlugin extends Plugin {
             Log.d(TAG, "Pre-Android 13 device, no permission needed");
         }
         
+        // Check also if we have notification listener access
+        boolean hasListenerAccess = hasNotificationListenerAccess();
+        Log.d(TAG, "Notification listener access: " + hasListenerAccess);
+        
         JSObject ret = new JSObject();
-        ret.put("hasPermission", hasPermission);
+        ret.put("hasPermission", hasPermission && hasListenerAccess);
         call.resolve(ret);
     }
 
@@ -65,32 +74,59 @@ public class NotificationBlockerPlugin extends Plugin {
     public void requestNotificationPermission(PluginCall call) {
         Log.d(TAG, "Requesting notification permission");
         
-        if (Build.VERSION.SDK_INT >= 33) { // Android 13+ (Tiramisu)
-            // Save the call for later
-            savedCall = call;
-            
+        // Save the call for later
+        savedCall = call;
+        
+        // For Android 13+, request POST_NOTIFICATIONS permission
+        if (Build.VERSION.SDK_INT >= 33) {
             if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) 
                     != PackageManager.PERMISSION_GRANTED) {
                 
-                Log.d(TAG, "Permission not granted, requesting permission");
+                Log.d(TAG, "POST_NOTIFICATIONS permission not granted, requesting permission");
                 
                 // Request the permission
                 String[] permissions = { Manifest.permission.POST_NOTIFICATIONS };
-                
-                // Use standard Android permission request
                 ActivityCompat.requestPermissions(getActivity(), permissions, REQUEST_NOTIFICATION_PERMISSION);
                 return;
-            } else {
-                Log.d(TAG, "Permission already granted");
             }
-        } else {
-            Log.d(TAG, "Pre-Android 13 device, no permission needed");
         }
         
-        // If we reach here, either permission is granted or not needed
+        // If we don't have notification listener access, request it
+        if (!hasNotificationListenerAccess()) {
+            Log.d(TAG, "Notification listener access not granted, opening settings");
+            openNotificationListenerSettings();
+            return;
+        }
+        
+        // If we reach here, permissions are granted
         JSObject ret = new JSObject();
         ret.put("granted", true);
         call.resolve(ret);
+    }
+    
+    private boolean hasNotificationListenerAccess() {
+        Context context = getContext();
+        Set<String> packageNames = NotificationManagerCompat.getEnabledListenerPackages(context);
+        return packageNames.contains(context.getPackageName());
+    }
+    
+    private void openNotificationListenerSettings() {
+        Intent intent = new Intent();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            intent.setAction(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+        } else {
+            intent.setAction("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+        }
+        
+        try {
+            getActivity().startActivityForResult(intent, REQUEST_NOTIFICATION_LISTENER_SETTINGS);
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening notification listener settings", e);
+            if (savedCall != null) {
+                savedCall.reject("Failed to open notification listener settings: " + e.getMessage());
+                savedCall = null;
+            }
+        }
     }
     
     @Override
@@ -106,8 +142,37 @@ public class NotificationBlockerPlugin extends Plugin {
             boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
             
             Log.d(TAG, "Permission result: " + (granted ? "GRANTED" : "DENIED"));
+            
+            if (granted) {
+                // Now check for notification listener access
+                if (!hasNotificationListenerAccess()) {
+                    openNotificationListenerSettings();
+                    return;
+                }
+            }
+            
             JSObject ret = new JSObject();
             ret.put("granted", granted);
+            savedCall.resolve(ret);
+            savedCall = null;
+        }
+    }
+    
+    @Override
+    protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
+        super.handleOnActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == REQUEST_NOTIFICATION_LISTENER_SETTINGS) {
+            if (savedCall == null) {
+                Log.e(TAG, "Null saved call in activity result");
+                return;
+            }
+            
+            boolean hasAccess = hasNotificationListenerAccess();
+            Log.d(TAG, "Notification listener settings result: " + (hasAccess ? "GRANTED" : "DENIED"));
+            
+            JSObject ret = new JSObject();
+            ret.put("granted", hasAccess);
             savedCall.resolve(ret);
             savedCall = null;
         }
@@ -148,13 +213,29 @@ public class NotificationBlockerPlugin extends Plugin {
             return;
         }
         
-        // This is a simplified implementation
-        // In a real app, you would need to use NotificationListenerService
-        // which requires special permissions and setup
-        JSObject ret = new JSObject();
-        ret.put("success", true);
-        ret.put("message", "Mock implementation, no actual blocking performed");
-        call.resolve(ret);
+        if (!hasNotificationListenerAccess()) {
+            Log.d(TAG, "No notification listener access, opening settings");
+            savedCall = call;
+            openNotificationListenerSettings();
+            return;
+        }
+        
+        // On newer Android, we need to send a broadcast to our NotificationListenerService
+        // This implementation assumes you have a NotificationListenerService set up
+        try {
+            Context context = getContext();
+            Intent intent = new Intent("app.lovable.focus.BLOCK_NOTIFICATIONS");
+            intent.putExtra("packageName", packageName);
+            intent.putExtra("block", true);
+            context.sendBroadcast(intent);
+            
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (Exception e) {
+            Log.e(TAG, "Error blocking notifications: " + e.getMessage());
+            call.reject("Error blocking notifications: " + e.getMessage());
+        }
     }
     
     @PluginMethod
@@ -165,10 +246,26 @@ public class NotificationBlockerPlugin extends Plugin {
             return;
         }
         
-        // Similar to blockAppNotifications, this is simplified
-        JSObject ret = new JSObject();
-        ret.put("success", true);
-        ret.put("message", "Mock implementation, no actual unblocking performed");
-        call.resolve(ret);
+        if (!hasNotificationListenerAccess()) {
+            Log.d(TAG, "No notification listener access, opening settings");
+            savedCall = call;
+            openNotificationListenerSettings();
+            return;
+        }
+        
+        try {
+            Context context = getContext();
+            Intent intent = new Intent("app.lovable.focus.BLOCK_NOTIFICATIONS");
+            intent.putExtra("packageName", packageName);
+            intent.putExtra("block", false);
+            context.sendBroadcast(intent);
+            
+            JSObject ret = new JSObject();
+            ret.put("success", true);
+            call.resolve(ret);
+        } catch (Exception e) {
+            Log.e(TAG, "Error unblocking notifications: " + e.getMessage());
+            call.reject("Error unblocking notifications: " + e.getMessage());
+        }
     }
-} 
+}
