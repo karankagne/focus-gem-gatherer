@@ -9,13 +9,13 @@ interface FocusContextType {
   focusSessions: number;
   coins: number;
   streakDays: number;
-  allowedApps: string[]; // New: Array of package names allowed during focus
+  allowedApps: string[]; // Array of package names allowed during focus
   startFocusSession: (minutes: number) => void;
   endFocusSession: (completed?: boolean) => void;
   updateSessionTime: (seconds: number) => void;
   earnCoins: (amount: number) => void;
   spendCoins: (amount: number) => boolean;
-  toggleAllowedApp: (packageName: string) => void; // New: Toggle app in allowed list
+  toggleAllowedApp: (packageName: string) => void; // Toggle app in allowed list
 }
 
 const FocusContext = createContext<FocusContextType | undefined>(undefined);
@@ -40,7 +40,7 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
   const [focusSessions, setFocusSessions] = useState(0);
   const [coins, setCoins] = useState(120); // Starting coins
   const [streakDays, setStreakDays] = useState(3); // Starting streak
-  const [allowedApps, setAllowedApps] = useState<string[]>([]); // New: Store allowed apps
+  const [allowedApps, setAllowedApps] = useState<string[]>([]); // Store allowed apps
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -113,7 +113,7 @@ export const FocusProvider = ({ children }: FocusProviderProps) => {
     return false;
   };
 
-  // New: Toggle an app in the allowed list
+  // Toggle an app in the allowed list
   const toggleAllowedApp = (packageName: string) => {
     setAllowedApps(prev => 
       prev.includes(packageName)

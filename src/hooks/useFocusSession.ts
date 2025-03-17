@@ -20,9 +20,8 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
 
   // Update duration when initialDuration changes
   useEffect(() => {
-    setDuration(initialDuration);
-    // Reset timer if not active
     if (!isActive) {
+      setDuration(initialDuration);
       setTimeElapsed(0);
     }
   }, [initialDuration, isActive]);

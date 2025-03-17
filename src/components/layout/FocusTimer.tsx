@@ -36,6 +36,12 @@ const FocusTimer = ({
   const [isStopDialogOpen, setIsStopDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  // Reset timer when initialTime changes
+  useEffect(() => {
+    setTimeRemaining(initialTime * 60);
+    setIsCompleted(false);
+  }, [initialTime]);
+
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
@@ -133,7 +139,7 @@ const FocusTimer = ({
         </Button>
         
         <Button
-          className="w-16 h-16 rounded-full bg-focus hover:bg-focus-dark text-white"
+          className="w-16 h-16 rounded-full bg-focus hover:bg-focus/90 text-white"
           onClick={pauseTimer}
         >
           {isActive ? (
