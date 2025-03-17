@@ -33,6 +33,12 @@ interface ChatDialogProps {
 // Mock current user - in a real app, this would come from auth context
 const currentUser = { id: 'current-user', name: 'You' };
 
+// Default participants if none provided
+const defaultParticipants = [
+  { id: 'u1', name: 'Alex' },
+  { id: 'u2', name: 'Morgan' }
+];
+
 const ChatDialog = ({
   isOpen,
   onOpenChange,
@@ -43,21 +49,24 @@ const ChatDialog = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Use provided participants or default ones if array is empty
+  const effectiveParticipants = participants.length > 0 ? participants : defaultParticipants;
 
   // Mock initial messages - in a real app, these would come from API
   useEffect(() => {
     const initialMessages: Message[] = [
       {
         id: '1',
-        senderId: participants[0]?.id || 'u1',
-        senderName: participants[0]?.name || 'Alex',
+        senderId: effectiveParticipants[0]?.id || 'u1',
+        senderName: effectiveParticipants[0]?.name || 'Alex',
         text: "Hey everyone! How's your progress on this challenge?",
         timestamp: new Date(Date.now() - 3600000),
       },
       {
         id: '2',
-        senderId: participants[1]?.id || 'u2',
-        senderName: participants[1]?.name || 'Morgan',
+        senderId: effectiveParticipants[1]?.id || 'u2',
+        senderName: effectiveParticipants[1]?.name || 'Morgan',
         text: "I'm already at 40% completion! This topic is interesting.",
         timestamp: new Date(Date.now() - 1800000),
       },
@@ -66,7 +75,7 @@ const ChatDialog = ({
     if (isOpen) {
       setMessages(initialMessages);
     }
-  }, [isOpen, participants]);
+  }, [isOpen, effectiveParticipants]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -105,7 +114,7 @@ const ChatDialog = ({
         
         <div className="flex flex-col h-[50vh]">
           <div className="text-sm text-muted-foreground mb-2">
-            {participants.length} participants in this challenge
+            {effectiveParticipants.length} participants in this challenge
           </div>
           
           <ScrollArea className="flex-1 pr-4">

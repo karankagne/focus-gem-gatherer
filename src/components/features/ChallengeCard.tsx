@@ -166,7 +166,7 @@ const ChallengeCard = ({
               <Button 
                 variant="outline"
                 onClick={openChat} 
-                className="flex-1 mt-2"
+                className={`mt-2 ${!joined ? 'flex-1' : 'w-full'}`}
               >
                 <MessageSquare className="h-4 w-4 mr-1" />
                 Chat
