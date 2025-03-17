@@ -5,6 +5,7 @@ import { Play, Pause, RefreshCw } from 'lucide-react';
 import AnimatedCounter from '../ui/AnimatedCounter';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface FocusTimerProps {
   initialTime?: number; // in minutes
@@ -22,6 +23,7 @@ const FocusTimer = ({
   const [timeRemaining, setTimeRemaining] = useState(initialTime * 60); // convert to seconds
   const [isActive, setIsActive] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -66,10 +68,11 @@ const FocusTimer = ({
   };
 
   const progress = 1 - timeRemaining / (initialTime * 60);
+  const timerSize = isMobile ? 'w-56 h-56' : 'w-64 h-64';
 
   return (
     <div className={cn('flex flex-col items-center', className)}>
-      <div className="relative w-64 h-64 flex items-center justify-center mb-6">
+      <div className={cn("relative flex items-center justify-center mb-6", timerSize)}>
         {/* Circular progress background */}
         <div className="absolute inset-0 rounded-full bg-secondary" />
         

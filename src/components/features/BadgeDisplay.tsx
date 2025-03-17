@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { Trophy, Star, Clock, EyeOff, Flame } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Badge {
   id: string;
@@ -36,10 +37,14 @@ const getBadgeColor = (level?: 'bronze' | 'silver' | 'gold', unlocked = false) =
 };
 
 const BadgeDisplay = ({ badges, className }: BadgeDisplayProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className={cn('space-y-4', className)}>
       <h2 className="text-2xl font-semibold tracking-tight">Achievements</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className={cn("grid gap-4", 
+        isMobile ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+      )}>
         {badges.map((badge) => (
           <GlassCard
             key={badge.id}
@@ -50,13 +55,13 @@ const BadgeDisplay = ({ badges, className }: BadgeDisplayProps) => {
           >
             <div 
               className={cn(
-                "w-14 h-14 rounded-full flex items-center justify-center mb-3 border-2",
+                "w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mb-3 border-2",
                 getBadgeColor(badge.level, badge.unlocked)
               )}
             >
               {badge.icon}
             </div>
-            <h3 className="font-medium mb-1">{badge.name}</h3>
+            <h3 className="font-medium mb-1 text-sm md:text-base">{badge.name}</h3>
             <p className="text-xs text-muted-foreground">{badge.description}</p>
             
             {badge.progress !== undefined && badge.progress < 1 && (
