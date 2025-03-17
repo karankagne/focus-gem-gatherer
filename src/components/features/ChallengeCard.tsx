@@ -162,7 +162,7 @@ const ChallengeCard = ({
               </Button>
             )}
             
-            {(type === 'group' || type === 'global') && joined && participants.length > 0 && (
+            {(type === 'group' || type === 'global') && (
               <Button 
                 variant="outline"
                 onClick={openChat} 
