@@ -79,7 +79,7 @@ const Index = () => {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <p className="text-muted-foreground">Block distractions. Earn rewards. Stay focused.</p>
+          <p className="text-muted-foreground bg-background/80 py-2 px-4 rounded-md backdrop-blur-sm inline-block">Block distractions. Earn rewards. Stay focused.</p>
         </motion.div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
