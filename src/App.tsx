@@ -18,18 +18,20 @@ function App() {
       <FocusProvider>
         <Router>
           <FriendConnectionHandler />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/challenges" element={<Challenges />} />
-            <Route path="/rewards" element={<Rewards />} />
-            <Route path="/friends" element={<Friends />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/connect/:userId" element={<Friends />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <footer className="text-center py-4 text-sm text-muted-foreground">
-            with ❤️ from Shivkaran Kagne :)
-          </footer>
+          <div className="pt-safe" style={{ minHeight: '100vh' }}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/challenges" element={<Challenges />} />
+              <Route path="/rewards" element={<Rewards />} />
+              <Route path="/friends" element={<Friends />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/connect/:userId" element={<Friends />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <footer className="text-center py-4 text-sm text-muted-foreground">
+              with ❤️ from Shivkaran Kagne :)
+            </footer>
+          </div>
         </Router>
         <Toaster />
       </FocusProvider>
