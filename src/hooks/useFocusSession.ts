@@ -14,6 +14,7 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
   const [isActive, setIsActive] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isStopConfirmationOpen, setIsStopConfirmationOpen] = useState(false);
   
   const { earnCoins } = useFocus();
 
@@ -28,10 +29,29 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
   }, [duration]);
 
   const pauseSession = useCallback(() => {
+    // If already active, we should show confirmation before pausing
+    if (isActive && !isPaused) {
+      setIsStopConfirmationOpen(true);
+      return;
+    }
+    
     setIsPaused(true);
     toast('Session paused', {
       description: 'Take a short break, but don\'t forget to come back!',
     });
+  }, [isActive, isPaused]);
+
+  const confirmPauseSession = useCallback(() => {
+    setIsPaused(true);
+    setIsStopConfirmationOpen(false);
+    
+    toast('Session paused', {
+      description: 'Take a short break, but don\'t forget to come back!',
+    });
+  }, []);
+
+  const cancelPauseSession = useCallback(() => {
+    setIsStopConfirmationOpen(false);
   }, []);
 
   const resumeSession = useCallback(() => {
@@ -104,12 +124,16 @@ export const useFocusSession = (options: UseFocusSessionOptions = {}) => {
     timeRemaining,
     progress,
     duration,
+    isStopConfirmationOpen,
     setDuration,
     startSession,
     pauseSession,
+    confirmPauseSession,
+    cancelPauseSession,
     resumeSession,
     endSession,
     resetSession,
+    setIsStopConfirmationOpen,
   };
 };
 

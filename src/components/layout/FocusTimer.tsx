@@ -6,6 +6,16 @@ import AnimatedCounter from '../ui/AnimatedCounter';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface FocusTimerProps {
   initialTime?: number; // in minutes
@@ -23,6 +33,7 @@ const FocusTimer = ({
   const [timeRemaining, setTimeRemaining] = useState(initialTime * 60); // convert to seconds
   const [isActive, setIsActive] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isStopDialogOpen, setIsStopDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -46,13 +57,28 @@ const FocusTimer = ({
     };
   }, [isActive, timeRemaining, onComplete, onTimeUpdate, isCompleted]);
 
-  const toggleTimer = () => {
-    setIsActive(!isActive);
-    if (!isActive && timeRemaining > 0) {
-      toast('Focus session started', {
-        description: 'Stay focused to earn coins!',
-      });
+  const startTimer = () => {
+    setIsActive(true);
+    toast('Focus session started', {
+      description: 'Stay focused to earn coins!',
+    });
+  };
+
+  const pauseTimer = () => {
+    // If already active, show confirmation dialog before stopping
+    if (isActive) {
+      setIsStopDialogOpen(true);
+    } else {
+      startTimer();
     }
+  };
+
+  const confirmStopTimer = () => {
+    setIsActive(false);
+    setIsStopDialogOpen(false);
+    toast('Focus session paused', {
+      description: 'Remember, you earn coins by staying focused!',
+    });
   };
 
   const resetTimer = () => {
@@ -108,7 +134,7 @@ const FocusTimer = ({
         
         <Button
           className="w-16 h-16 rounded-full bg-focus hover:bg-focus-dark text-white"
-          onClick={toggleTimer}
+          onClick={pauseTimer}
         >
           {isActive ? (
             <Pause className="h-6 w-6" />
@@ -117,6 +143,25 @@ const FocusTimer = ({
           )}
         </Button>
       </div>
+
+      {/* Emergency Stop Dialog */}
+      <AlertDialog open={isStopDialogOpen} onOpenChange={setIsStopDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to stop?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Stopping your focus session early will interrupt your flow and may reduce the coins you earn. 
+              Please only stop if there's an emergency.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue Session</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStopTimer} className="bg-destructive text-destructive-foreground">
+              Stop Session
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
