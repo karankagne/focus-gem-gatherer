@@ -44,12 +44,12 @@ export function ThemeProvider({
     root.classList.add(theme)
   }, [theme])
 
-  const value: ThemeProviderState = {
+  const value = {
     theme,
     setTheme: (theme: Theme) => {
       setTheme(theme)
     },
-  }
+  } as ThemeProviderState
 
   return (
     <ThemeProviderContext.Provider value={value} {...props}>
